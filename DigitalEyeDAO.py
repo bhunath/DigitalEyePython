@@ -25,3 +25,17 @@ def fetch_blink_report_per_minute(user_id):
             blink_count += 1
         blink_record_group_by_minute[key] = blink_count
     return dumps(blink_record_group_by_minute)
+
+
+def fetch_exposure_data(user_id):
+    blink_records = blink_store_db.find({'user_id': user_id})
+    blink_record_group_by_day = {};
+    for blink_record in blink_records:
+        key = '{0:%d}-{0:%m}-{0:%Y}'.format(blink_record.get('blink_time'))
+        blink_count = blink_record_group_by_day.get(key)
+        if blink_count is None:
+            blink_count = 1
+        else:
+            blink_count += 1
+        blink_record_group_by_day[key] = blink_count
+    return dumps(blink_record_group_by_day)

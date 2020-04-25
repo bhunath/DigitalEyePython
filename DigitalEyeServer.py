@@ -7,7 +7,7 @@ from flask_cors import CORS, cross_origin
 import cv2
 import base64
 from DigitalEyeDetectBlink import process_image_for_blink_detection, get_blink_count
-from DigitalEyeDAO import store_blink, fetch_blink_report_per_minute
+from DigitalEyeDAO import store_blink, fetch_blink_report_per_minute , fetch_exposure_data
 
 client = MongoClient('localhost', 27017)
 db = client.digital_eyes
@@ -53,6 +53,11 @@ def stop_capturing():
 def fetch_blink_per_minute_report():
     print('inside fetch_blink_per_minute_data')
     return fetch_blink_report_per_minute(1)
+
+
+@app.route("/fetch_exposure_data")
+def fetch_exposure_report():
+    return fetch_exposure_data(1)
 
 
 if __name__ == '__main__':
