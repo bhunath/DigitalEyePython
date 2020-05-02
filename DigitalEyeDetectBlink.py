@@ -3,6 +3,7 @@ from imutils import face_utils
 import dlib
 import cv2
 from DigitalEyeDetectEye import detect_eye
+from DigitalEyeDAO import store_closeness
 
 # initialize the frame counters and the total number of blinks
 TOTAL = 0
@@ -82,6 +83,7 @@ def process_image_for_blink_detection(image):
     if not face_detected:
         if len(eye_bounds) > 0:
             if EYE_DETECT_COUNTER >= CLOSENESS_THRESH :
+                store_closeness(1)
                 return "Eye is too close"
             else:
                 EYE_DETECT_COUNTER += 1

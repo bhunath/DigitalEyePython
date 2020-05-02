@@ -3,11 +3,13 @@ from flask import Flask, request
 
 from pymongo import MongoClient
 from bson.json_util import dumps
+import json
 from flask_cors import CORS, cross_origin
 import cv2
 import base64
 from DigitalEyeDetectBlink import process_image_for_blink_detection, get_blink_count
-from DigitalEyeDAO import store_blink, fetch_blink_report_per_minute , fetch_exposure_data
+from DigitalEyeDAO import store_blink, fetch_blink_report_per_minute, fetch_exposure_data, fetch_closeness_data, \
+    store_touch, fetch_touch_data
 
 client = MongoClient('localhost', 27017)
 db = client.digital_eyes
@@ -58,6 +60,22 @@ def fetch_blink_per_minute_report():
 @app.route("/fetch_exposure_data")
 def fetch_exposure_report():
     return fetch_exposure_data(1)
+
+
+@app.route("/closeness_data")
+def fetch_closeness_report():
+    return fetch_closeness_data(1)
+
+
+@app.route("/touch_data")
+def fetch_touch_report():
+    return fetch_touch_data(1)
+
+
+@app.route("/store_face_touch", methods=['post'])
+def store_face_touch():
+    print(request.get_json())
+    return store_touch(request.get_json()['user_id'])
 
 
 if __name__ == '__main__':
