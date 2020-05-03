@@ -23,7 +23,7 @@ def store_touch(user_id):
 
 def store_closeness(user_id):
     closeness_record = closeness_store_db.insert_one({'user_id': user_id, 'close_time': datetime.today()})
-    print(closeness_record)
+    print('Eye is Close Record',closeness_record)
     return closeness_record
 
 

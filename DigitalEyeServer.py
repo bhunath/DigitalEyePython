@@ -34,6 +34,7 @@ def fetch_blink_stat():
 
 @app.route("/uploadImage", methods=['post'])
 def upload_image():
+    result = {'Blink_Count': 0, 'Blink_Message': ''}
     image_string = request.form['file'].split(",")[1]
     img_data_b_64 = base64.b64decode(image_string)
     img_np_arr = np.fromstring(img_data_b_64, np.uint8)
@@ -41,8 +42,14 @@ def upload_image():
     previous_blink_count = get_blink_count()
     blink_count = process_image_for_blink_detection(image)
     if type(blink_count) == int and blink_count > previous_blink_count:
+        result['Blink_Count'] = blink_count
         store_blink(1)
-    return "Blink Count {}".format(blink_count)
+    if type(blink_count) != int:
+        result['Blink_Count'] = previous_blink_count
+        result['Blink_Message'] = blink_count
+    if type(blink_count) == int and blink_count == previous_blink_count:
+        result['Blink_Count'] = blink_count
+    return dumps(result)
 
 
 @app.route("/stop_capturing")
