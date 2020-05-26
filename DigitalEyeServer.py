@@ -1,15 +1,15 @@
-import numpy as np
-from flask import Flask, request
-
-from pymongo import MongoClient
-from bson.json_util import dumps
-import json
-from flask_cors import CORS, cross_origin
-import cv2
 import base64
-from DigitalEyeDetectBlink import process_image_for_blink_detection, get_blink_count
+
+import cv2
+import numpy as np
+from bson.json_util import dumps
+from flask import Flask, request
+from flask_cors import CORS, cross_origin
+from pymongo import MongoClient
+
 from DigitalEyeDAO import store_blink, fetch_blink_report_per_minute, fetch_exposure_data, fetch_closeness_data, \
     store_touch, fetch_touch_data
+from DigitalEyeDetectBlink import process_image_for_blink_detection, get_blink_count
 
 client = MongoClient('localhost', 27017)
 db = client.digital_eyes
@@ -85,5 +85,6 @@ def store_face_touch():
     return store_touch(request.get_json()['user_id'])
 
 
-if __name__ == '__main__':
+def start_server():
     app.run(debug=False, host='0.0.0.0', port=8080)
+

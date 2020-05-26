@@ -4,6 +4,7 @@ import dlib
 import cv2
 from DigitalEyeDetectEye import detect_eye
 from DigitalEyeDAO import store_closeness
+from DigitalEyeDetectEye import resource_path
 
 # initialize the frame counters and the total number of blinks
 TOTAL = 0
@@ -34,7 +35,7 @@ CLOSENESS_THRESH = 200
 EYE_DETECT_COUNTER = 0
 
 detector = dlib.get_frontal_face_detector()
-predictor = dlib.shape_predictor("shape_predictor_68_face_landmarks.dat_2")
+predictor = dlib.shape_predictor(resource_path("shape_predictor_68_face_landmarks.dat_2"))
 
 # grab the indexes of the facial landmarks for the left and
 # right eye, respectively
