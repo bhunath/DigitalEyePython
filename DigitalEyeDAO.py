@@ -2,8 +2,11 @@ import os
 from datetime import datetime
 from bson.json_util import dumps
 from tinydb import TinyDB, Query
-import json
+import threading
 
+threadLock_blink = threading.Lock()
+threadLock_closeness = threading.Lock()
+threadLock_touch = threading.Lock()
 dirname = os.getcwd()
 db_blink_store = TinyDB(dirname + '/blink_db.json')
 db_closeness_store = TinyDB(dirname + '/closeness_db.json')
@@ -15,7 +18,9 @@ touch_store_db = db_touch_store.table('touch_store')
 
 def store_blink(user_id):
     try:
+        threadLock_blink.acquire()
         inserted_record = blink_store_db.insert({'user_id': user_id, 'blink_time': datetime.today().__str__()})
+        threadLock_blink.release()
         print(inserted_record)
         return inserted_record
     except:
@@ -24,7 +29,9 @@ def store_blink(user_id):
 
 def store_touch(user_id):
     try:
+        threadLock_touch.acquire()
         inserted_record = touch_store_db.insert({'user_id': user_id, 'touch_time': datetime.today().__str__()})
+        threadLock_touch.release()
         print(inserted_record)
         return "inserted_record"
     except:
@@ -33,20 +40,31 @@ def store_touch(user_id):
 
 def store_closeness(user_id):
     try:
+        threadLock_closeness.acquire()
         closeness_record = closeness_store_db.insert({'user_id': user_id, 'close_time': datetime.today().__str__()})
+        threadLock_closeness.release()
         print('Eye is Close Record', closeness_record)
         return "closeness_record"
     except:
         print("Error Occurred while storing closeness Record")
 
 
-def fetch_blink_report_per_minute(user_id):
+def get_group_by_format(groupBy):
+    if "minute" == groupBy:
+        return "%Y-%m-%d %H:%M"
+    if "hour" == groupBy:
+        return "%Y-%m-%d %H"
+    if "day" == groupBy:
+        return "%Y-%m-%d"
+
+
+def fetch_blink_report_per_minute(user_id, groupBy):
     User = Query()
     blink_records = blink_store_db.search(User.user_id == user_id)
     blink_record_group_by_minute = {};
     for blink_record in blink_records:
         blink_time = datetime.strptime(blink_record.get('blink_time'), "%Y-%m-%d %H:%M:%S.%f")
-        key = blink_time.strftime("%Y-%m-%d %H:%M")
+        key = blink_time.strftime(get_group_by_format(groupBy))
         blink_count = blink_record_group_by_minute.get(key)
         if blink_count is None:
             blink_count = 1
@@ -56,13 +74,13 @@ def fetch_blink_report_per_minute(user_id):
     return dumps(blink_record_group_by_minute)
 
 
-def fetch_exposure_data(user_id):
+def fetch_exposure_data(user_id, groupBy):
     User = Query()
     blink_records = blink_store_db.search(User.user_id == user_id)
     blink_record_group_by_day = {}
     for blink_record in blink_records:
         blink_time = datetime.strptime(blink_record.get('blink_time'), "%Y-%m-%d %H:%M:%S.%f")
-        key = blink_time.strftime("%Y-%m-%d %H:%M")
+        key = blink_time.strftime(get_group_by_format(groupBy))
         blink_count = blink_record_group_by_day.get(key)
         if blink_count is None:
             blink_count = 1
@@ -75,13 +93,13 @@ def fetch_exposure_data(user_id):
     return dumps(blink_record_group_by_day)
 
 
-def fetch_closeness_data(user_id):
+def fetch_closeness_data(user_id, groupBy):
     User = Query()
     closeness_records = closeness_store_db.search(User.user_id == user_id)
     closeness_record_group_by_day = {}
     for closeness_record in closeness_records:
         blink_time = datetime.strptime(closeness_record.get('close_time'), "%Y-%m-%d %H:%M:%S.%f")
-        key = blink_time.strftime("%Y-%m-%d %H:%M")
+        key = blink_time.strftime(get_group_by_format(groupBy))
         closeness_count = closeness_record_group_by_day.get(key)
         if closeness_count is None:
             closeness_count = 1
@@ -94,13 +112,13 @@ def fetch_closeness_data(user_id):
     return dumps(closeness_record_group_by_day)
 
 
-def fetch_touch_data(user_id):
+def fetch_touch_data(user_id, groupBy):
     User = Query()
     touch_records = touch_store_db.find(User.user_id == user_id)
     touch_records_group_by_day = {}
     for touch_record in touch_records:
         blink_time = datetime.strptime(touch_record.get('touch_time'), "%Y-%m-%d %H:%M:%S.%f")
-        key = blink_time.strftime("%Y-%m-%d %H:%M")
+        key = blink_time.strftime(get_group_by_format(groupBy))
         touch_count = touch_records_group_by_day.get(key)
         if touch_count is None:
             touch_count = 1

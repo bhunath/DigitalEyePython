@@ -1,1 +1,14 @@
 venv/**
+*.json
+*.iml
+*.log
+build/**
+dist/**
+*.toc
+*.zip
+*.manifest
+*.spec
+*.pyz
+*.txt
+*.html
+.idea/**

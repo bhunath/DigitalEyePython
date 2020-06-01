@@ -5,15 +5,12 @@ import numpy as np
 from bson.json_util import dumps
 from flask import Flask, request
 from flask_cors import CORS, cross_origin
-from pymongo import MongoClient
+
 
 from DigitalEyeDAO import store_blink, fetch_blink_report_per_minute, fetch_exposure_data, fetch_closeness_data, \
     store_touch, fetch_touch_data
 from DigitalEyeDetectBlink import process_image_for_blink_detection, get_blink_count
 
-client = MongoClient('localhost', 27017)
-db = client.digital_eyes
-pythonTest = db.eye_blink_stats
 
 app = Flask(__name__)
 
@@ -23,13 +20,6 @@ log = logging.getLogger('werkzeug')
 log.setLevel(logging.ERROR)
 
 CORS(app)
-
-
-@app.route("/fetchBlinkStat")
-@cross_origin()
-def fetch_blink_stat():
-    json = dumps(pythonTest.find())
-    return json
 
 
 @app.route("/uploadImage", methods=['post'])
@@ -58,25 +48,29 @@ def stop_capturing():
     return "Stopped Capturing Blink"
 
 
-@app.route("/fetch_blink_per_minute_data")
-def fetch_blink_per_minute_report():
+@app.route("/fetch_blink", methods=['post'])
+def fetch_blink():
     print('inside fetch_blink_per_minute_data')
-    return fetch_blink_report_per_minute(1)
+    groupBY = request.get_json()['groupBy']
+    return fetch_blink_report_per_minute(1, groupBY)
 
 
-@app.route("/fetch_exposure_data")
+@app.route("/fetch_exposure_data", methods=['post'])
 def fetch_exposure_report():
-    return fetch_exposure_data(1)
+    groupBY = request.get_json()['groupBy']
+    return fetch_exposure_data(1, groupBY)
 
 
-@app.route("/closeness_data")
+@app.route("/closeness_data", methods=['post'])
 def fetch_closeness_report():
-    return fetch_closeness_data(1)
+    groupBY = request.get_json()['groupBy']
+    return fetch_closeness_data(1, groupBY)
 
 
 @app.route("/touch_data")
 def fetch_touch_report():
-    return fetch_touch_data(1)
+    groupBY = request.get_json()['groupBy']
+    return fetch_touch_data(1, groupBY)
 
 
 @app.route("/store_face_touch", methods=['post'])
