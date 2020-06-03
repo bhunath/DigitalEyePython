@@ -13,7 +13,7 @@ class MainWindow(QMainWindow):
         super(MainWindow, self).__init__(*args, **kwargs)
         self.setWindowTitle("Digital Eyes")
         self.browser = QWebEngineView()
-        self.browser.setUrl(QUrl("https://bhunath.github.io/DigitalEyesReporting/DigitalEyes.html"))
+        self.browser.setUrl(QUrl("http://localhost:9000/"))
         self.setCentralWidget(self.browser)
 
 
@@ -44,6 +44,6 @@ def start_web_view():
     page = WebEnginePage()
     view.setPage(page)
     view.setWindowTitle("Digital Eyes")
-    view.load(QUrl("https://bhunath.github.io/DigitalEyesReporting/DigitalEyes.html"))
+    view.load(QUrl("http://localhost:9000/"))
     view.show()
     sys.exit(app.exec_())
