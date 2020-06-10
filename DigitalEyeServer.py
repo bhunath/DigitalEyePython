@@ -5,12 +5,12 @@ import numpy as np
 from bson.json_util import dumps
 from flask import Flask, request
 from flask_cors import CORS, cross_origin
-
+from threading import Thread
 
 from DigitalEyeDAO import store_blink, fetch_blink_report_per_minute, fetch_exposure_data, fetch_closeness_data, \
     store_touch, fetch_touch_data
 from DigitalEyeDetectBlink import process_image_for_blink_detection, get_blink_count
-
+from DigitalEyeLockScreen import start_scheduling, stop_scheduling
 
 app = Flask(__name__)
 
@@ -30,7 +30,9 @@ def upload_image():
     img_np_arr = np.fromstring(img_data_b_64, np.uint8)
     image = cv2.imdecode(img_np_arr, cv2.IMREAD_COLOR)
     previous_blink_count = get_blink_count()
-    blink_count = process_image_for_blink_detection(image)
+    captureCloseness = True if request.form['closeness'] == 'true' else False
+    captureRedness = True if request.form['redness'] == 'true' else False
+    blink_count = process_image_for_blink_detection(image, captureCloseness, captureRedness)
     if type(blink_count) == int and blink_count > previous_blink_count:
         result['Blink_Count'] = blink_count
         store_blink(1)
@@ -79,6 +81,24 @@ def store_face_touch():
     return store_touch(request.get_json()['user_id'])
 
 
+@app.route("/configure_force_lock", methods=['post'])
+def configure_force_lock():
+    print(request.get_json())
+    action = request.get_json()['action']
+    if action == "start":
+        time = request.get_json()['time']
+        if time != '':
+            timeInInteger = int(time)
+            t = Thread(target=start_scheduling,
+                       args=(timeInInteger,))
+            t.deamon = True
+            t.start()
+            return "Started"
+    elif action == "stop":
+        stop_scheduling()
+        return "Stopped"
+    return ""
+
+
 def start_server():
     app.run(debug=False, host='0.0.0.0', port=8080)
-

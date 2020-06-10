@@ -41,7 +41,7 @@ def eye_aspect_ratio(eye):
 # frames the eye must be below the threshold
 EYE_AR_THRESH = 0.3
 EYE_AR_CONSTANT_FRAMES = 3
-CLOSENESS_THRESH = 200
+CLOSENESS_THRESH = 50
 
 EYE_DETECT_COUNTER = 0
 
@@ -55,45 +55,39 @@ predictor = dlib.shape_predictor(resource_path(
 (rStart, rEnd) = face_utils.FACIAL_LANDMARKS_IDXS["right_eye"]
 
 
-def process_image_for_blink_detection(image):
+def process_image_for_blink_detection(image, captureCloseness, captureRedness):
     global COUNTER
     global TOTAL
     global CLOSENESS_THRESH
     global EYE_DETECT_COUNTER
     global NOTIFICATION_ON
-    cv2.imwrite('F:/images/imageog.jpg', image) 
     greyImage = cv2.cvtColor(image, cv2.COLOR_BGR2GRAY)
     faceBounds = detector(greyImage, 0)
-    eye_bounds = detect_eye(greyImage)
-    face_detected = False
+    face_detected = not captureCloseness
     for faceBound in faceBounds:
-        CLOSENESS_THRESH = 0
         face_detected = True
         faceLandmarks = predictor(greyImage, faceBound)
         faceLandmarks = face_utils.shape_to_np(faceLandmarks)
         leftEye = faceLandmarks[lStart:lEnd]
         rightEye = faceLandmarks[rStart:rEnd]
-        (x, y, w, h) = cv2.boundingRect(np.array([leftEye]))
-        leftEyeImage = image[y:y + h, x:x + w]
-        cv2.imwrite('F:/images/lefteyeImg.jpg', leftEyeImage) 
-        foundRedness = get_eye_redness(leftEyeImage)
-        if not foundRedness:
-            print('checking in right eye')
-            (x, y, w, h) = cv2.boundingRect(np.array([rightEye]))
-            rightEyeImage = image[y:y + h, x:x + w]
-            cv2.imwrite('F:/images/righteyeImg.jpg', rightEyeImage) 
-            foundRedness = get_eye_redness(rightEyeImage)
+        if captureRedness:
+            (x, y, w, h) = cv2.boundingRect(np.array([leftEye]))
+            leftEyeImage = image[y:y + h, x:x + w]
+            foundRedness = get_eye_redness(leftEyeImage)
+            if not foundRedness:
+                #print('checking in right eye')
+                (x, y, w, h) = cv2.boundingRect(np.array([rightEye]))
+                rightEyeImage = image[y:y + h, x:x + w]
+                foundRedness = get_eye_redness(rightEyeImage)
 
-        print('found redness')
-        print(foundRedness)
-        if foundRedness:
-            if not NOTIFICATION_ON:
-                NOTIFICATION_ON = True
-                t = Thread(target=show_notification,
-				args=("Redness Detected",))
-                t.deamon = True
-                t.start()
-
+            #print('found redness')
+            if foundRedness:
+                if not NOTIFICATION_ON:
+                    NOTIFICATION_ON = True
+                    t = Thread(target=show_notification,
+                               args=("Redness Detected",))
+                    t.deamon = True
+                    t.start()
         leftEar = eye_aspect_ratio(leftEye)
         rightEar = eye_aspect_ratio(rightEye)
         averageEar = (leftEar + rightEar) / 2.0
@@ -103,7 +97,6 @@ def process_image_for_blink_detection(image):
         cv2.drawContours(image, [rightEyeHull], -1, (0, 255, 0), 1)
         cv2.drawContours(image, [leftEye], -1, (0, 255, 0), 1)
         cv2.drawContours(image, [rightEye], -1, (0, 255, 0), 1)
-        #cv2.imwrite('F:/images/image4.jpg', image) 
         if averageEar < EYE_AR_THRESH:
             COUNTER += 1
             # otherwise, the eye aspect ratio is not below the blink
@@ -118,11 +111,13 @@ def process_image_for_blink_detection(image):
             COUNTER = 0
             # draw the total number of blinks on the frame along with
             # the computed eye aspect ratio for the frame
-    print("Blinks: {}".format(TOTAL))
+    #print("Blinks: {}".format(TOTAL))
     if not face_detected:
+        eye_bounds = detect_eye(greyImage)
         if len(eye_bounds) > 0:
             if EYE_DETECT_COUNTER >= CLOSENESS_THRESH:
                 store_closeness(1)
+                EYE_DETECT_COUNTER=0
                 return "Eye is too close"
             else:
                 EYE_DETECT_COUNTER += 1
@@ -143,8 +138,8 @@ def get_eye_redness(image):
     mask2 = cv2.inRange(hsv,lower_red,upper_red)
 
     #mask1 = mask1+mask2
-    print(mask1)
-    print(mask2)
+    #print(mask1)
+    #print(mask2)
 
     number_of_non_zero_pixels = cv2.countNonZero(mask1)
     number_of_non_zero_pixels_m2 = cv2.countNonZero(mask2)

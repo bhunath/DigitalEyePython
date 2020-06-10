@@ -1,20 +1,11 @@
 import sys
 from PyQt5.QtCore import *
-from PyQt5.QtWebEngineWidgets import *
 from PyQt5.QtWidgets import *
+from PyQt5.QtWebEngineWidgets import *
 from DigitalEyeNotification import show_window_notification
 from DigitalEyeDetectEye import resource_path
 
 icon = resource_path('python.ico')
-
-
-class MainWindow(QMainWindow):
-    def __init__(self, *args, **kwargs):
-        super(MainWindow, self).__init__(*args, **kwargs)
-        self.setWindowTitle("Digital Eyes")
-        self.browser = QWebEngineView()
-        self.browser.setUrl(QUrl("http://localhost:9000/"))
-        self.setCentralWidget(self.browser)
 
 
 class WebEnginePage(QWebEnginePage):
@@ -44,6 +35,6 @@ def start_web_view():
     page = WebEnginePage()
     view.setPage(page)
     view.setWindowTitle("Digital Eyes")
-    view.load(QUrl("http://localhost:9000/"))
+    view.load(QUrl("https://bhunath.github.io/DigitalEyesReporting/DigitalEyes.html"))
     view.show()
     sys.exit(app.exec_())

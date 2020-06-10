@@ -21,7 +21,7 @@ def store_blink(user_id):
         threadLock_blink.acquire()
         inserted_record = blink_store_db.insert({'user_id': user_id, 'blink_time': datetime.today().__str__()})
         threadLock_blink.release()
-        print(inserted_record)
+        #print(inserted_record)
         return inserted_record
     except:
         print("Error Occurred while storing blink Record")
@@ -32,7 +32,7 @@ def store_touch(user_id):
         threadLock_touch.acquire()
         inserted_record = touch_store_db.insert({'user_id': user_id, 'touch_time': datetime.today().__str__()})
         threadLock_touch.release()
-        print(inserted_record)
+        #print(inserted_record)
         return "inserted_record"
     except:
         print("Error Occurred in Storing Touch")
@@ -43,7 +43,7 @@ def store_closeness(user_id):
         threadLock_closeness.acquire()
         closeness_record = closeness_store_db.insert({'user_id': user_id, 'close_time': datetime.today().__str__()})
         threadLock_closeness.release()
-        print('Eye is Close Record', closeness_record)
+        #print('Eye is Close Record', closeness_record)
         return "closeness_record"
     except:
         print("Error Occurred while storing closeness Record")
