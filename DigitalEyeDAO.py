@@ -51,9 +51,9 @@ def store_closeness(user_id):
 
 def get_group_by_format(groupBy):
     if "minute" == groupBy:
-        return "%Y-%m-%d %H:%M"
+        return "%H:%M"
     if "hour" == groupBy:
-        return "%Y-%m-%d %H"
+        return "%H"
     if "day" == groupBy:
         return "%Y-%m-%d"
 
@@ -61,54 +61,72 @@ def get_group_by_format(groupBy):
 def fetch_blink_report_per_minute(user_id, groupBy):
     User = Query()
     blink_records = blink_store_db.search(User.user_id == user_id)
-    blink_record_group_by_minute = {};
+    blink_record_group_by_minute = {}
     for blink_record in blink_records:
         blink_time = datetime.strptime(blink_record.get('blink_time'), "%Y-%m-%d %H:%M:%S.%f")
-        key = blink_time.strftime(get_group_by_format(groupBy))
-        blink_count = blink_record_group_by_minute.get(key)
-        if blink_count is None:
-            blink_count = 1
+        day = blink_time.strftime(get_group_by_format('day'))
+        time = blink_time.strftime(get_group_by_format(groupBy))
+        date_data = blink_record_group_by_minute.get(day)
+        if date_data is None:
+            time_data = {time: 1}
+            blink_record_group_by_minute[day] = time_data
         else:
-            blink_count += 1
-        blink_record_group_by_minute[key] = blink_count
+            time_data = date_data.get(time)
+            if time_data is not None:
+                time_data += 1
+                date_data[time] = time_data
+                blink_record_group_by_minute[day] = date_data
+            else:
+                time_data = {time: 1}
+                blink_record_group_by_minute[day].update(time_data)
     return dumps(blink_record_group_by_minute)
 
 
 def fetch_exposure_data(user_id, groupBy):
     User = Query()
     blink_records = blink_store_db.search(User.user_id == user_id)
-    blink_record_group_by_day = {}
+    blink_record_group_by_minute = {}
     for blink_record in blink_records:
         blink_time = datetime.strptime(blink_record.get('blink_time'), "%Y-%m-%d %H:%M:%S.%f")
-        key = blink_time.strftime(get_group_by_format(groupBy))
-        blink_count = blink_record_group_by_day.get(key)
-        if blink_count is None:
-            blink_count = 1
+        day = blink_time.strftime(get_group_by_format('day'))
+        time = blink_time.strftime(get_group_by_format(groupBy))
+        date_data = blink_record_group_by_minute.get(day)
+        if date_data is None:
+            time_data = {time: 10}
+            blink_record_group_by_minute[day] = time_data
         else:
-            blink_count += 1
-        blink_record_group_by_day[key] = blink_count
-    for key in blink_record_group_by_day:
-        value = blink_record_group_by_day[key] * 100 / 1000
-        blink_record_group_by_day[key] = value
-    return dumps(blink_record_group_by_day)
+            time_data = date_data.get(time)
+            if time_data is not None:
+                time_data += 10
+                date_data[time] = time_data
+                blink_record_group_by_minute[day] = date_data
+            else:
+                time_data = {time: 10}
+                blink_record_group_by_minute[day].update(time_data)
+    return dumps(blink_record_group_by_minute)
 
 
 def fetch_closeness_data(user_id, groupBy):
     User = Query()
     closeness_records = closeness_store_db.search(User.user_id == user_id)
     closeness_record_group_by_day = {}
-    for closeness_record in closeness_records:
-        blink_time = datetime.strptime(closeness_record.get('close_time'), "%Y-%m-%d %H:%M:%S.%f")
-        key = blink_time.strftime(get_group_by_format(groupBy))
-        closeness_count = closeness_record_group_by_day.get(key)
-        if closeness_count is None:
-            closeness_count = 1
+    for blink_record in closeness_records:
+        blink_time = datetime.strptime(blink_record.get('close_time'), "%Y-%m-%d %H:%M:%S.%f")
+        day = blink_time.strftime(get_group_by_format('day'))
+        time = blink_time.strftime(get_group_by_format(groupBy))
+        date_data = closeness_record_group_by_day.get(day)
+        if date_data is None:
+            time_data = {time: 10}
+            closeness_record_group_by_day[day] = time_data
         else:
-            closeness_count += 1
-        closeness_record_group_by_day[key] = closeness_count
-    for key in closeness_record_group_by_day:
-        value = closeness_record_group_by_day[key] * 100 / 1000
-        closeness_record_group_by_day[key] = value
+            time_data = date_data.get(time)
+            if time_data is not None:
+                time_data += 10
+                date_data[time] = time_data
+                closeness_record_group_by_day[day] = date_data
+            else:
+                time_data = {time: 10}
+                closeness_record_group_by_day[day].update(time_data)
     return dumps(closeness_record_group_by_day)
 
 
@@ -118,14 +136,19 @@ def fetch_touch_data(user_id, groupBy):
     touch_records_group_by_day = {}
     for touch_record in touch_records:
         blink_time = datetime.strptime(touch_record.get('touch_time'), "%Y-%m-%d %H:%M:%S.%f")
-        key = blink_time.strftime(get_group_by_format(groupBy))
-        touch_count = touch_records_group_by_day.get(key)
-        if touch_count is None:
-            touch_count = 1
+        day = blink_time.strftime(get_group_by_format('day'))
+        time = blink_time.strftime(get_group_by_format(groupBy))
+        date_data = touch_records_group_by_day.get(day)
+        if date_data is None:
+            time_data = {time: 10}
+            touch_records_group_by_day[day] = time_data
         else:
-            touch_count += 1
-        touch_records_group_by_day[key] = touch_count
-    for key in touch_records_group_by_day:
-        value = touch_records_group_by_day[key] * 100 / 1000
-        touch_records_group_by_day[key] = value
+            time_data = date_data.get(time)
+            if time_data is not None:
+                time_data += 10
+                date_data[time] = time_data
+                touch_records_group_by_day[day] = date_data
+            else:
+                time_data = {time: 10}
+                touch_records_group_by_day[day].update(time_data)
     return dumps(touch_records_group_by_day)
