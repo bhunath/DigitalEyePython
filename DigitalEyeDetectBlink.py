@@ -5,7 +5,7 @@ import numpy as np
 import dlib
 import cv2
 from DigitalEyeDetectEye import detect_eye
-from DigitalEyeDAO import store_closeness
+from DigitalEyeDAO import store_closeness, store_exposure
 from DigitalEyeDetectEye import resource_path
 from DigitalEyeNotification import show_window_notification
 from threading import Thread
@@ -66,6 +66,7 @@ def process_image_for_blink_detection(image, captureCloseness, captureRedness):
     face_detected = not captureCloseness
     for faceBound in faceBounds:
         face_detected = True
+        store_exposure(1)
         faceLandmarks = predictor(greyImage, faceBound)
         faceLandmarks = face_utils.shape_to_np(faceLandmarks)
         leftEye = faceLandmarks[lStart:lEnd]
@@ -115,6 +116,7 @@ def process_image_for_blink_detection(image, captureCloseness, captureRedness):
     if not face_detected:
         eye_bounds = detect_eye(greyImage)
         if len(eye_bounds) > 0:
+            store_exposure(1)
             if EYE_DETECT_COUNTER >= CLOSENESS_THRESH:
                 store_closeness(1)
                 EYE_DETECT_COUNTER=0
