@@ -68,4 +68,6 @@ def start_web_view():
     view.setWindowTitle("Digital Eyes")
     view.load(QUrl("https://bhunath.github.io/DigitalEyesReporting/DigitalEyes.html"))
     view.show()
+    view.setMinimumWidth(1600)
+    view.setMinimumHeight(700)
     sys.exit(app.exec_())
