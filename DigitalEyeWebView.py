@@ -52,9 +52,9 @@ class WebEnginePage(QWebEnginePage):
             self.setFeaturePermission(url, feature, QWebEnginePage.PermissionDeniedByUser)
 
     def javaScriptConsoleMessage(self, QWebEnginePage_JavaScriptConsoleMessageLevel, p_str, p_int, p_str_1):
-        print('Console Call', QWebEnginePage_JavaScriptConsoleMessageLevel, p_str, p_int, p_str_1)
+        print('Digital Eye', QWebEnginePage_JavaScriptConsoleMessageLevel, p_str, p_int, p_str_1)
         if p_str is not None and "Notification" in p_str:
-            show_window_notification('Console Call', p_str,icon)
+            show_window_notification('Digital Eye', p_str,icon)
 
 
 def start_web_view():
