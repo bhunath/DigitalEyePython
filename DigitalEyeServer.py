@@ -60,7 +60,10 @@ def fetch_blink():
 @app.route("/fetch_settings", methods=['get'])
 def fetch_settings():
     print('inside fetch_settings')
-    return fetch_user_settings(1)
+    settings = fetch_user_settings(1)
+    if settings is not None :
+        return settings
+    return {}
 
 @app.route("/try_long_break", methods=['get'])
 def route_try_long_break():
@@ -90,7 +93,7 @@ def fetch_closeness_report():
     return fetch_closeness_data(1, groupBY)
 
 
-@app.route("/touch_data")
+@app.route("/touch_data", methods=['post'])
 def fetch_touch_report():
     groupBY = request.get_json()['groupBy']
     return fetch_touch_data(1, groupBY)
