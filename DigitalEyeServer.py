@@ -8,9 +8,9 @@ from flask_cors import CORS, cross_origin
 from threading import Thread
 
 from DigitalEyeDAO import store_blink, fetch_blink_report_per_minute, fetch_exposure_data, fetch_closeness_data, \
-    store_touch, fetch_touch_data
+    store_touch, fetch_touch_data, store_user_settings, fetch_user_settings
 from DigitalEyeDetectBlink import process_image_for_blink_detection, get_blink_count
-from DigitalEyeLockScreen import start_scheduling, stop_scheduling
+from DigitalEyeUtils import DigitalEyeUtils
 
 app = Flask(__name__)
 
@@ -18,6 +18,7 @@ import logging
 
 log = logging.getLogger('werkzeug')
 log.setLevel(logging.ERROR)
+utils = DigitalEyeUtils()
 
 CORS(app)
 
@@ -56,6 +57,26 @@ def fetch_blink():
     groupBY = request.get_json()['groupBy']
     return fetch_blink_report_per_minute(1, groupBY)
 
+@app.route("/fetch_settings", methods=['get'])
+def fetch_settings():
+    print('inside fetch_settings')
+    return fetch_user_settings(1)
+
+@app.route("/try_long_break", methods=['get'])
+def route_try_long_break():
+    print('inside try_long_break')
+    return utils.try_long_break()
+
+@app.route("/try_short_break", methods=['get'])
+def route_try_short_break():
+    print('inside try_short_break')
+    return utils.try_short_break()
+
+@app.route("/try_blink_notification", methods=['get'])
+def route_try_blink_notification():
+    print('inside try_blink_notification')
+    return utils.try_blink_notification()
+
 
 @app.route("/fetch_exposure_data", methods=['post'])
 def fetch_exposure_report():
@@ -81,24 +102,17 @@ def store_face_touch():
     return store_touch(request.get_json()['user_id'])
 
 
-@app.route("/configure_force_lock", methods=['post'])
-def configure_force_lock():
+@app.route("/store_settings", methods=['post'])
+def store_settings():
     print(request.get_json())
-    action = request.get_json()['action']
-    if action == "start":
-        time = request.get_json()['time']
-        if time != '':
-            timeInInteger = int(time)
-            t = Thread(target=start_scheduling,
-                       args=(timeInInteger,))
-            t.deamon = True
-            t.start()
-            return "Started"
-    elif action == "stop":
-        stop_scheduling()
-        return "Stopped"
-    return ""
+    saved_settings = store_user_settings(1,request.get_json())
+    return saved_settings
+
+
 
 
 def start_server():
+    settings = fetch_user_settings(1)
+    if settings is not None:
+        utils.user_settings_updated(settings)
     app.run(debug=False, host='0.0.0.0', port=8080)
