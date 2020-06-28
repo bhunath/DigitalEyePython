@@ -9,6 +9,7 @@ from DigitalEyeDAO import store_closeness
 from DigitalEyeDetectEye import resource_path
 from DigitalEyeNotification import show_window_notification
 from threading import Thread
+from DigitalEyeBlinkCountNotification import DigitalEyeBlinkCountNotification
 
 # initialize the frame counters and the total number of blinks
 TOTAL = 0
@@ -106,6 +107,7 @@ def process_image_for_blink_detection(image, captureCloseness, captureRedness):
             # then increment the total number of blinks
             if COUNTER >= EYE_AR_CONSTANT_FRAMES:
                 TOTAL += 1
+                DigitalEyeBlinkCountNotification.blinks_count += 1
 
             # reset the eye frame counter
             COUNTER = 0

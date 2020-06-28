@@ -2,18 +2,23 @@ import os
 from datetime import datetime
 from bson.json_util import dumps
 from tinydb import TinyDB, Query
+from tinydb.table import Document
 import threading
+from DigitalEyeUtils import DigitalEyeUtils
 
 threadLock_blink = threading.Lock()
 threadLock_closeness = threading.Lock()
 threadLock_touch = threading.Lock()
 dirname = os.getcwd()
+utils = DigitalEyeUtils()
 db_blink_store = TinyDB(dirname + '/blink_db.json')
 db_closeness_store = TinyDB(dirname + '/closeness_db.json')
 db_touch_store = TinyDB(dirname + '/touch_db.json')
+db_settings = TinyDB(dirname + '/settings_db.json')
 blink_store_db = db_blink_store.table('blink_store')
 closeness_store_db = db_closeness_store.table('closeness_store')
 touch_store_db = db_touch_store.table('touch_store')
+settings_db = db_settings.table('user_settings')
 
 
 def store_blink(user_id):
@@ -25,6 +30,43 @@ def store_blink(user_id):
         return inserted_record
     except:
         print("Error Occurred while storing blink Record")
+        
+def store_blink(user_id):
+    try:
+        threadLock_blink.acquire()
+        inserted_record = blink_store_db.insert({'user_id': user_id, 'blink_time': datetime.today().__str__()})
+        threadLock_blink.release()
+        #print(inserted_record)
+        return inserted_record
+    except:
+        print("Error Occurred while storing blink Record")
+        
+
+def store_user_settings(user_id,settings):
+    print('settings_arr')
+    try:
+        current_settings = settings_db.get(doc_id=user_id)
+        if current_settings is not None :
+            settings_db.update(settings,doc_ids=[user_id])
+        else :
+            settings_db.insert(Document(settings,doc_id=user_id))
+        print('returning')
+        utils.user_settings_updated(settings)
+        return settings
+    except:
+        print("Error Occurred while storing settings")
+
+
+def fetch_user_settings(user_id):
+    try:
+        settings = {}
+        current_settings = settings_db.get(doc_id=user_id)
+        if current_settings is not None :
+            settings = current_settings
+        return settings
+    except:
+        print("Error Occurred while fetching settings")
+
 
 
 def store_touch(user_id):
