@@ -38,7 +38,9 @@ class DigitalEyeUtils():
         return "Success"
     
     def try_blink_notification(self):
+        current_blink_count = self.blinkCountObj.blinks_count
         self.blinkCountObj.execute_action()
+        self.blinkCountObj.blinks_count = current_blink_count
         return "Success"
     
     
