@@ -21,7 +21,7 @@ class DigitalEyeShortBreak(DigitalEyeActions):
         
 
     def start_scheduling(self,settings):
-        time = settings['long_break_every']
+        time = settings['short_break_every']
         if time != '':
             self.run_thread = True
             timeInInteger = int(time)

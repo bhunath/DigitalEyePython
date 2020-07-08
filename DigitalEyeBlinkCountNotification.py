@@ -20,7 +20,8 @@ class DigitalEyeBlinkCountNotification(DigitalEyeActions):
         blink_average = self.blinks_count
         if blink_average > 0 :
             blink_average = blink_average/self.timeInInteger
-        message = "Avg Blink rate for last "+str(self.timeInInteger)+" Min is "+str(blink_average)
+        print("Blink average "+str(blink_average))
+        message = "Avg Blink rate for last "+str(self.timeInInteger)+" Min is "+str(int(blink_average))
         self.blinks_count = 0
         show_window_notification("Digital Eyes", message)
 
